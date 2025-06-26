@@ -1,0 +1,30 @@
+services:
+  dgre-db:
+    image: ${DB_IMAGE:-postgis/postgis:15-master}
+    container_name: dgre_db
+    restart: ${RESTART_POLICY}
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - ${DB_PORT}:5432
+  dgre-pg-tileserv:
+    image: pramsey/pg_tileserv:latest
+    container_name: dgre_pg_tileserv
+    restart: ${RESTART_POLICY}
+    environment:
+      - DATABASE_URL=postgresql://dust_warning:dust_warning@dust-db:5432/dust_warning
+    ports:
+      - 7800:7800
+  dust-db:
+    image: ${DB_IMAGE:-postgis/postgis:15-master}
+    container_name: dust-db
+    restart: ${RESTART_POLICY}
+    environment:
+      - POSTGRES_DB=dust_warning
+      - POSTGRES_USER=dust_warning
+      - POSTGRES_PASSWORD=dust_warning
+    ports:
+      - 54432:5432
+
