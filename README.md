@@ -11,8 +11,8 @@ source .venv/bin/activate
 
 ### Start the database
 ```bash
-flask --app=dgregydro setup_schema
-flask --app=dgregydro db upgrade
+flask --app=dgrehydro setup_schema
+flask --app=dgrehydro db upgrade
 ```
 
 ### Commands
@@ -21,8 +21,8 @@ flask --app=dgregydro db upgrade
 - ingest flash floods
 
 ```bash
-flask --app=dgregydro ingest_reverine_floods
-flask --app=dgregydro update_reverine_floods 200384 2025-05-25 2025-05-25 40
+flask --app=dgrehydro ingest_riverine
+flask --app=dgrehydro update_riverine 200384 2025-05-25 2025-05-25 40
 
 flask --app=dgregydro ingest_flash_floods
 ```

@@ -1,11 +1,13 @@
 import logging
-import click
 
+import click
 from sqlalchemy.sql import text
+
 from dgrehydro import db
-from dgrehydro.ingestion import explode_geojson_to_riverineflood, explode_geojson_to_flashflood
+from dgrehydro.ingestors.burkina.ingestor_riverine import ingest_riverine_floods_from_csv
 from dgrehydro.models.riverineflood import RiverineFlood
 from dgrehydro.utils import load_riverine_flood_geojson
+
 
 @click.command(name="setup_schema")
 def setup_schema():
@@ -26,16 +28,7 @@ def setup_schema():
 @click.command(name="ingest_riverine")
 def ingest_riverine():
     logging.info("[INGESTION][RIVERINE]: Start")
-    logging.info("[INGESTION][RIVERINE]: Load geojson")
-    geojson = load_riverine_flood_geojson()
-
-    logging.info("[INGESTION][RIVERINE]: Ingest in base")
-    db_riverine_floods = explode_geojson_to_riverineflood(geojson)
-    for db_riverine_flood in db_riverine_floods :
-        db.session.add(db_riverine_flood)
-
-    db.session.flush(db_riverine_floods)
-    db.session.commit()
+    ingest_riverine_floods_from_csv()
 
 @click.command(name="update_riverine")
 @click.argument("subid")

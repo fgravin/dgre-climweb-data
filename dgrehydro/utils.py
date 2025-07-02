@@ -2,19 +2,25 @@ import json
 import logging
 import re
 import os
+import pandas as pd
 
 from datetime import datetime
 
 DATA_DIR = os.path.dirname(os.path.abspath(__file__)) + "/data"
+date_pattern = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 def get_dates_from_geojson(geojson):
-    date_pattern = re.compile(r"\d{4}-\d{2}-\d{2}")
     dates = set()
     for feature in geojson['features']:
         for key in feature['properties']:
             if date_pattern.fullmatch(key):
                 dates.add(datetime.strptime(key, "%Y-%m-%d"))
     return sorted(dates) if dates else None
+
+def get_dates_from_dataframe(data_frame: pd.DataFrame):
+    date_cols = [col for col in data_frame.columns if date_pattern.match(col)]
+    return date_cols
+
 
 def load_riverine_flood_geojson():
 

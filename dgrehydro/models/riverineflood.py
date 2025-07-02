@@ -1,11 +1,11 @@
 from dgrehydro import db
 
+
 class RiverineFlood(db.Model):
     __tablename__ = "dgre_riverine_flood"
     __table_args__ = (
         db.UniqueConstraint("subid", "init_date", "forecast_date", name='unique_riverine_flood_date'),
     )
-
     id = db.Column(db.Integer, primary_key=True)
     fid = db.Column(db.Integer, nullable=False)
     subid = db.Column(db.String, nullable=False)
@@ -19,7 +19,7 @@ class RiverineFlood(db.Model):
         self.subid = subid
         self.init_date = init_date
         self.forecast_date = forecast_date
-        self.value = value or init_value
+        self.value = value
         self.init_value = init_value
 
     def __repr__(self):
