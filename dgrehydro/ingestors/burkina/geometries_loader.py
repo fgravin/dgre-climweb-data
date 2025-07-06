@@ -4,10 +4,11 @@ import os
 from sqlalchemy import func
 
 from dgrehydro import db
+from dgrehydro.config.base import SETTINGS
 from dgrehydro.models.municipality import Municipality
 from dgrehydro.models.riversegment import RiverSegment
 
-GEOMETRIES_DATA_DIR = './dgrehydro/data'
+GEOMETRIES_DATA_DIR = SETTINGS.get('GEOMETRIES_DATA_DIR')
 RIVER_SEGMENTS_GEOJSON_FILE = 'bfa12_river_segments.geojson'
 MUNICIPALITIES_GEOJSON_FILE = 'bfa12_municipalities.geojson'
 
