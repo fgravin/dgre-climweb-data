@@ -1,12 +1,15 @@
 import logging
+import os
+import re
 
 import click
 from sqlalchemy.sql import text
 
 from dgrehydro import db
+from dgrehydro.ingestors.burkina.geometries_loader import load_river_segments, load_municipalities
+from dgrehydro.ingestors.burkina.ingestor_flashflood import ingest_flash_floods_from_csv
 from dgrehydro.ingestors.burkina.ingestor_riverine import ingest_riverine_floods_from_csv
 from dgrehydro.models.riverineflood import RiverineFlood
-from dgrehydro.utils import load_riverine_flood_geojson
 
 
 @click.command(name="setup_schema")
@@ -24,6 +27,25 @@ def setup_schema():
     db.session.commit()
     
     logging.info("[DBSETUP]: Done Setting up schema")
+
+@click.command(name="create_pg_functions")
+def create_pg_functions():
+    logging.info("[DBSETUP]: Creating pg functions")
+
+    # Run all sql scripts in dgrehydro/db/ folder
+    sql_files_directory = './dgrehydro/db/'
+    for filename in os.listdir(sql_files_directory):
+        if re.search(r'\.sql$', filename):
+            sql_file_path = os.path.join(sql_files_directory, filename)
+            try:
+                with open(sql_file_path, 'r') as file:
+                    sql_script = file.read()
+                    db.session.execute(text(sql_script))
+                    db.session.commit()
+                    logging.info(f"[DBSETUP]: Executed SQL script from {sql_file_path}")
+            except Exception as e:
+                logging.error(f"[DBSETUP]: Error executing {sql_file_path}: {e}")
+    logging.info("[DBSETUP]: Done Creating pg function")
 
 @click.command(name="ingest_riverine")
 def ingest_riverine():
@@ -49,16 +71,12 @@ def update_riverine(subid, init_date, forecast_date, value):
     db_record_to_update.value = value
     db.session.commit()
 
-@click.command(name="ingest_flash")
-def ingest_flash():
-    logging.info("[INGESTION][FLASH]: Start")
-    logging.info("[INGESTION][FLASH]: Load geojson")
-    geojson = load_riverine_flood_geojson()
+@click.command(name="load_geometries")
+def load_geometries():
+    load_river_segments()
+    load_municipalities()
 
-    logging.info("[INGESTION][FLASH]: Ingest in base")
-    db_flash_floods = explode_geojson_to_flashflood(geojson)
-    for db_flash_flood in db_flash_floods :
-        db.session.add(db_flash_flood)
-
-    db.session.flush(db_flash_floods)
-    db.session.commit()
+@click.command(name="ingest_flashflood")
+def ingest_flashflood():
+    logging.info("[INGESTION][FLASHFLOOD]: Start")
+    ingest_flash_floods_from_csv()

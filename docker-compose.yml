@@ -14,17 +14,6 @@ services:
     container_name: dgre_pg_tileserv
     restart: ${RESTART_POLICY}
     environment:
-      - DATABASE_URL=postgresql://dust_warning:dust_warning@dust-db:5432/dust_warning
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@dgre-db:5432/${DB_NAME}
     ports:
       - 7800:7800
-  dust-db:
-    image: ${DB_IMAGE:-postgis/postgis:15-master}
-    container_name: dust-db
-    restart: ${RESTART_POLICY}
-    environment:
-      - POSTGRES_DB=dust_warning
-      - POSTGRES_USER=dust_warning
-      - POSTGRES_PASSWORD=dust_warning
-    ports:
-      - 54432:5432
-
