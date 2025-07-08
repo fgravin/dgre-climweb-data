@@ -42,7 +42,9 @@ def db_available():
 
 
 health.add_check(db_available)
-import dgrehydro.routes.server
+
+import dgrehydro.routes.routes_flashflood
+import dgrehydro.routes.routes_riverineflood
 
 app.register_blueprint(endpoints, url_prefix='/api/v1')
 

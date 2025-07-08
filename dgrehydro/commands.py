@@ -12,6 +12,9 @@ from dgrehydro.ingestors.burkina.ingestor_riverine import ingest_riverine_floods
 from dgrehydro.models.riverineflood import RiverineFlood
 
 
+########################
+# SETUP DB COMMANDS
+########################
 @click.command(name="setup_schema")
 def setup_schema():
     logging.info("[DBSETUP]: Setting up schema")
@@ -47,11 +50,27 @@ def create_pg_functions():
                 logging.error(f"[DBSETUP]: Error executing {sql_file_path}: {e}")
     logging.info("[DBSETUP]: Done Creating pg function")
 
+########################
+# INGESTION COMMANDS
+########################
+@click.command(name="load_geometries")
+def load_geometries():
+    load_river_segments()
+    load_municipalities()
+
 @click.command(name="ingest_riverine")
 def ingest_riverine():
     logging.info("[INGESTION][RIVERINE]: Start")
     ingest_riverine_floods_from_csv()
 
+@click.command(name="ingest_flashflood")
+def ingest_flashflood():
+    logging.info("[INGESTION][FLASHFLOOD]: Start")
+    ingest_flash_floods_from_csv()
+
+########################
+# UPDATE COMMANDS
+########################
 @click.command(name="update_riverine")
 @click.argument("subid")
 @click.argument("init_date")
@@ -71,12 +90,3 @@ def update_riverine(subid, init_date, forecast_date, value):
     db_record_to_update.value = value
     db.session.commit()
 
-@click.command(name="load_geometries")
-def load_geometries():
-    load_river_segments()
-    load_municipalities()
-
-@click.command(name="ingest_flashflood")
-def ingest_flashflood():
-    logging.info("[INGESTION][FLASHFLOOD]: Start")
-    ingest_flash_floods_from_csv()

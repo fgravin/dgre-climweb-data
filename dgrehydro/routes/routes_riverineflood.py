@@ -1,14 +1,15 @@
 import datetime
 import logging
 
-from flask import request
+from flask import request, jsonify
+from sqlalchemy import desc
 
 from dgrehydro import db
-from dgrehydro.models.flashflood import FlashFlood
 from dgrehydro.models.riverineflood import RiverineFlood
 from dgrehydro.routes import endpoints
 
-# http://localhost:5000/api/v1/riverineflood?=init_date=2025-07-01&forecast_date=2025-07-01
+FORECAST_DAYS = 10
+
 @endpoints.route('/riverineflood', strict_slashes=False, methods=['GET'])
 def get_riverine_floods():
     try:
@@ -52,43 +53,28 @@ def update_riverine_flood(subid):
         logging.error(f"[UPDATE][RIVERINE_FLOOD] Error updating riverine flood: {e}")
         return {"status": "error", "message": str(e)}, 500
 
-@endpoints.route('/flashflood', strict_slashes=False, methods=['GET'])
-def get_flash_floods():
+@endpoints.route('/riverineflood/forecast_dates', strict_slashes=False, methods=['GET'])
+def get_riverine_floods_dates():
     try:
-        today = datetime.datetime.now().strftime("%Y-%m-%d")
-        forecast_date = request.args.get('forecast_date', today)
-        logging.info(f"[GET][FLASH_FLOOD] forecast date: {forecast_date}")
+        logging.info("[GET][RIVERINE_FLOOD]: get forececast dates")
+        latest_init_date = RiverineFlood.query.order_by(desc(RiverineFlood.init_date)).first()
+        dates = []
 
-        query = FlashFlood.query.filter(FlashFlood.forecast_date == forecast_date)
+        if latest_init_date:
+            latest_init_date = latest_init_date.init_date
+            dates.append(latest_init_date)
 
-        flash_floods = query.all()
-        return [flood.serialize() for flood in flash_floods], 200
-    except Exception as e:
-        logging.error(f"Error fetching flash floods: {e}")
-        return {"status": "error", "message": str(e)}, 500
+            for i in range(1, FORECAST_DAYS):
+                dates.append(latest_init_date + datetime.timedelta(days=i))
 
-@endpoints.route('/flashflood/<subid>', strict_slashes=False, methods=['POST'])
-def update_flash_flood(subid):
-    try:
-        logging.info("[UPDATE][FLASH_FLOOD]: Update flash flood")
-        data = request.json
-        logging.info(f"[UPDATE][FLASH_FLOOD] data: {data}")
-        forecast_date = data.get('forecast_date')
-        value = data.get('value')
+        dates = [date.strftime("%Y-%m-%dT%H:%M:%S.000Z") for date in dates]
 
-        logging.info(f"[UPDATE][FLASH_FLOOD] subid: {subid},forecast date: {forecast_date}, value: {value}")
-
-        db_record_to_update = FlashFlood.query.filter_by(subid=subid, forecast_date=forecast_date).first()
-
-        if db_record_to_update is None:
-            logging.error(f"[UPDATE][FLASH_FLOOD]: Record not found for subid {subid}, forecast date {forecast_date}")
-            return {"status": "error", "message": "Record not found"}, 404
-
-        db_record_to_update.value = value
-        db.session.commit()
-
-        return db_record_to_update.serialize(), 200
+        response = {
+            "timestamps": dates
+        }
+        return jsonify(response), 200
 
     except Exception as e:
-        logging.error(f"[UPDATE][FLASH_FLOOD] Error updating flash flood: {e}")
+        logging.error(f"Error fetching riverine floods: dates {e}")
         return {"status": "error", "message": str(e)}, 500
+
