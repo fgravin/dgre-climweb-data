@@ -31,7 +31,7 @@ run them manually:
 
 ```bash
 flask --app=dgrehydro ingest_riverine
-flask --app=dgregydro ingest_flash_flood
+flask --app=dgregydro ingest_flashflood
 flask --app=dgrehydro update_riverine 200384 2025-05-25 2025-05-25 40
 ```
 

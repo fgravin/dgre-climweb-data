@@ -1,4 +1,18 @@
 services:
+  dgre-api:
+    container_name: dgre_api
+    build:
+      context: .
+    restart: ${RESTART_POLICY}
+    environment:
+      - DEBUG=True
+      - WAIT_HOSTS=dgre_db:5432
+      - WAIT_TIMEOUT=60
+      - SQLALCHEMY_DATABASE_URI=postgresql://${DB_USER}:${DB_PASSWORD}@dgre_db:5432/${DB_NAME}
+      - FLASK_APP=dgrehydro/__init__.py
+    ports:
+      - 8001:8001
+
   dgre-db:
     image: ${DB_IMAGE:-postgis/postgis:15-master}
     container_name: dgre_db
