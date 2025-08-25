@@ -1,0 +1,2 @@
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+* * * * * cd /code && python /usr/local/bin/flask --app=dgrehydro ingest_riverine > /proc/1/fd/1 2>/proc/1/fd/2

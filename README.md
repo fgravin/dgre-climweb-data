@@ -7,6 +7,18 @@ functionalities to ingest, update, and visualize flood data.
 
 Copy `.env.sample` to `.env` and fill in the required values.
 
+```bash
+docker compose build
+docker compose up
+```
+
+This will start a 
+- PostgreSQL database with PostGIS extension,
+- PGTileServ to serve map tiles on `http://localhost:${APP_PORT}/pgtileserv/`,
+- A Flask CLI to manage database and ingestion tasks, and
+- A Flask web application to provide API endpoints EG. `http://localhost:${APP_PORT}/api/v1/riverineflood`
+
+## Development mode
 ### Setup the environment
 
 ```bash
@@ -48,13 +60,13 @@ To run in production, you can use `gunicorn` or `uwsgi` with the Flask app.
 
 ```bash
 poetry add gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 main:app
+gunicorn -w 4 -b 0.0.0.0:8001 main:app
 ```
 
 #### Routes
 
-* GET http://localhost:5000/api/v1/riverineflood
-* POST http://localhost:5000/api/v1/riverineflood/<subid>
+* GET http://localhost:8001/api/v1/riverineflood
+* POST http://localhost:8001/api/v1/riverineflood/<subid>
 
 ```
   Content-Type: application/json
@@ -65,8 +77,8 @@ gunicorn -w 4 -b 0.0.0.0:5000 main:app
   }
 ```
 
-* GET http://localhost:5000/api/v1/flashflood
-* POST http://localhost:5000/api/v1/flashflood/<subid>
+* GET http://localhost:8001/api/v1/flashflood
+* POST http://localhost:8001/api/v1/flashflood/<subid>
 
 ```
   Content-Type: application/json

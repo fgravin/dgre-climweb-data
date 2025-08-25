@@ -22,9 +22,17 @@ RUN chown $UID:$GID /wait &&  chmod +x /wait
 RUN poetry install  --no-interaction --no-ansi --no-root
 
 COPY ./dgrehydro ./dgrehydro
+COPY ./migrations ./migrations
+COPY ./.env ./.env
 
-RUN ls -lah
 RUN poetry install --no-interaction --no-ansi
+
+COPY ./ingest.cron /etc/cron.d/ingest.cron
+RUN chmod 0644 /etc/cron.d/ingest.cron && crontab /etc/cron.d/ingest.cron
+
+COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+ENTRYPOINT ["/code/docker-entrypoint.sh"]
 
 EXPOSE 8001
 
