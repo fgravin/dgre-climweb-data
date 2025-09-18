@@ -1,6 +1,6 @@
 import datetime
 import os
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import geopandas as gpd
 import pandas as pd
@@ -8,7 +8,6 @@ import pytest
 
 from dgrehydro.ingestors.burkina.ingestor_riverine import get_riverine_csv_input_path_of_the_day, \
     extract_db_riverines_from_csv, extract_riverines_from_geojson, map_day_date
-from dgrehydro.models.riverineflood import RiverineFlood
 
 
 @pytest.fixture

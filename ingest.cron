@@ -1,2 +1,3 @@
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-* * * * * cd /code && python /usr/local/bin/flask --app=dgrehydro ingest_riverine > /proc/1/fd/1 2>/proc/1/fd/2
+iPATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+0 15 * * * cd /code && /usr/local/bin/python /usr/local/bin/flask --app=dgrehydro ingest_riverine > /proc/1/fd/1 2>/proc/1/fd/2
+0 15 * * * cd /code && /usr/local/bin/python /usr/local/bin/flask --app=dgrehydro ingest_flashflood > /proc/1/fd/1 2>/proc/1/fd/2

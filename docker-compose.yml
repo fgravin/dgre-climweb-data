@@ -10,6 +10,7 @@ services:
       - dgre-api
       - dgre-pg-tileserv
     ports:
+      - 443
       - ${APP_PORT}:80
 
   dgre-api:
@@ -23,8 +24,11 @@ services:
       - DEBUG=True
       - WAIT_HOSTS=dgre_db:5432
       - WAIT_TIMEOUT=60
-      - SQLALCHEMY_DATABASE_URI=postgresql://${DB_USER}:${DB_PASSWORD}@dgre_db:5432/${DB_NAME}
+      - SQLALCHEMY_DATABASE_URI=postgresql://${DB_USER}:${DB_PASSWORD}@dgre-db:5432/${DB_NAME}
       - FLASK_APP=dgrehydro/__init__.py
+    volumes:
+      - ${DATA_RIVERINE_SOURCE_DIR}:${DATA_RIVERINE_SOURCE_DIR}
+      - ${DATA_FLASHFLOOD_SOURCE_DIR}:${DATA_FLASHFLOOD_SOURCE_DIR}
     depends_on:
       dgre-db:
         condition: service_healthy
@@ -47,7 +51,7 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - ${DB_PORT}:5432
+      - 5432
 
   dgre-pg-tileserv:
     image: pramsey/pg_tileserv:latest
