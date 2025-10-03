@@ -1,0 +1,7 @@
+services:
+  dgre-db:
+    ports:
+      - 55432:5432
+  dgre-pg-tileserv:
+    ports:
+      - 7800:7800

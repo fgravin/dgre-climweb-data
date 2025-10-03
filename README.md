@@ -8,24 +8,32 @@ functionalities to ingest, update, and visualize flood data.
 Copy `.env.sample` to `.env` and fill in the required values.
 
 ```bash
-docker compose build
-docker compose up
+docker compose --profile production build
+docker compose --profile production up
 ```
 
 This will start a 
 - PostgreSQL database with PostGIS extension,
+- A Nginx server to reverse proxy requests on `http://localhost:${APP_PORT}/`
 - PGTileServ to serve map tiles on `http://localhost:${APP_PORT}/pgtileserv/`,
 - A Flask CLI to manage database and ingestion tasks, and
 - A Flask web application to provide API endpoints EG. `http://localhost:${APP_PORT}/api/v1/riverineflood`
 
 ## Development mode
 ### Setup the environment
-
+Copy `.env.sample` to `.env` and fill in the required values.
 ```bash
 python3.11 -m venv .venv
 poetry install
 source .venv/bin/activate
 ```
+
+### Run DB and PGTileServ as docker containers
+
+This will open `55432` (postgres) & `7800` (pg_tilerv) ports on localhost.
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+````
 
 ### Setup database and datas
 
@@ -47,21 +55,12 @@ flask --app=dgregydro ingest_flashflood
 flask --app=dgrehydro update_riverine 200384 2025-05-25 2025-05-25 40
 ```
 
-### Web application
+## Web application (backend API)
 
 #### Development mode
 
 `python3.11 main.py` to run the web server on `FLASK_APP_PORT` (default is `5000`).
 
-
-#### Production mode
-
-To run in production, you can use `gunicorn` or `uwsgi` with the Flask app.
-
-```bash
-poetry add gunicorn
-gunicorn -w 4 -b 0.0.0.0:8001 main:app
-```
 
 #### Routes
 

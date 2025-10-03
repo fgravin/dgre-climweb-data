@@ -7,9 +7,8 @@ import pandas as pd
 
 from dgrehydro import SETTINGS
 from dgrehydro import db
+from dgrehydro.models._geo_riversegment import RiverSegment
 from dgrehydro.models.riverineflood import RiverineFlood
-from dgrehydro.models.riversegment import RiverSegment
-from dgrehydro.utils import load_riverine_flood_geojson, get_dates_from_geojson
 
 
 def ingest_riverine_floods_from_csv() -> list[RiverineFlood]:
@@ -35,19 +34,6 @@ def check_csv_path(csv_path):
         logging.error(f"[INGESTION][RIVERINE][CSV] CSV file {csv_path} does not exist.")
         raise FileNotFoundError(f"CSV file {csv_path} does not exist.")
 
-
-def ingest_riverine_floods_from_geojson() -> list[RiverineFlood]:
-    logging.info("[INGESTION][RIVERINE][GeoJson]: Start")
-    logging.info("[INGESTION][RIVERINE][GeoJson]: Load geojson")
-    geojson = load_riverine_flood_geojson()
-
-    logging.info("[INGESTION][RIVERINE][GeoJson]: Ingest in base")
-    db_flash_floods = extract_riverines_from_geojson(geojson)
-    for db_flash_flood in db_flash_floods :
-        db.session.add(db_flash_flood)
-
-    db.session.flush(db_flash_floods)
-    db.session.commit()
 
 def get_riverine_csv_input_path_of_the_day(data_dir) -> str:
     today = datetime.now().strftime("%Y%m%d")
@@ -94,26 +80,3 @@ def map_day_date(df):
         if re.match(r"\d{4}-\d{2}-\d{2}", str(row["Date"]))
     }
     return mapping
-
-def extract_riverines_from_geojson(geojson):
-    riverine_floods = []
-
-    forecast_dates = get_dates_from_geojson(geojson)
-    init_date = forecast_dates[0]
-
-    for feature in geojson['features']:
-        for forecast_date in forecast_dates:
-            value = feature['properties'][forecast_date.strftime("%Y-%m-%d")]
-            fid = feature['properties']["fid"]
-            subid = feature['properties']["SUBID"]
-            init_value = value
-            rf = RiverineFlood(
-                fid=fid,
-                subid=subid,
-                init_date=init_date,
-                forecast_date=forecast_date,
-                init_value=init_value,
-                value=init_value
-            )
-            riverine_floods.append(rf)
-    return riverine_floods

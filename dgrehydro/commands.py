@@ -6,7 +6,8 @@ import click
 from sqlalchemy.sql import text
 
 from dgrehydro import db
-from dgrehydro.ingestors.burkina.geometries_loader import load_river_segments, load_municipalities
+from dgrehydro.ingestors.burkina.geometries_loader import load_river_segments, load_municipalities, load_regions
+from dgrehydro.ingestors.burkina.ingestor_dustwarning import load_warnings
 from dgrehydro.ingestors.burkina.ingestor_flashflood import ingest_flash_floods_from_csv
 from dgrehydro.ingestors.burkina.ingestor_riverine import ingest_riverine_floods_from_csv
 from dgrehydro.models.riverineflood import RiverineFlood
@@ -57,6 +58,7 @@ def create_pg_functions():
 def load_geometries():
     load_river_segments()
     load_municipalities()
+    load_regions()
 
 @click.command(name="ingest_riverine")
 def ingest_riverine():
@@ -67,6 +69,11 @@ def ingest_riverine():
 def ingest_flashflood():
     logging.info("[INGESTION][FLASHFLOOD]: Start")
     ingest_flash_floods_from_csv()
+
+@click.command(name="ingest_dustwarning")
+def ingest_dustwarning():
+    logging.info("[INGESTION][DUST_WARNINGS]: Start")
+    load_warnings()
 
 ########################
 # UPDATE COMMANDS
