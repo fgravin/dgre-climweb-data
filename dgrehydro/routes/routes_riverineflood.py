@@ -7,6 +7,7 @@ from sqlalchemy import desc
 from dgrehydro import db
 from dgrehydro.models.riverineflood import RiverineFlood
 from dgrehydro.routes import endpoints
+from dgrehydro.service.riverine_db import riverinesfloods_to_geojson
 
 FORECAST_DAYS = 10
 
@@ -73,6 +74,21 @@ def get_riverine_floods_dates():
             "timestamps": dates
         }
         return jsonify(response), 200
+
+    except Exception as e:
+        logging.error(f"Error fetching riverine floods: dates {e}")
+        return {"status": "error", "message": str(e)}, 500
+
+@endpoints.route('/riverinefloods', strict_slashes=False, methods=['GET'])
+def get_riverine_floods_as_geojson():
+    try:
+        today = datetime.datetime.now().strftime("%Y-%m-%d")
+        init_date = request.args.get('init_date', today)
+        forecast_date = request.args.get('forecast_date', today)
+        logging.info(f"[GET][RIVERINE_FLOODS AS GEOJSON] init date: {init_date}, forecast date: {forecast_date}")
+
+        result = riverinesfloods_to_geojson(init_date, forecast_date)
+        return jsonify(result), 200
 
     except Exception as e:
         logging.error(f"Error fetching riverine floods: dates {e}")

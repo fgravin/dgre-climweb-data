@@ -59,7 +59,7 @@ flask --app=dgrehydro update_riverine 200384 2025-05-25 2025-05-25 40
 
 #### Development mode
 
-`python3.11 main.py` to run the web server on `FLASK_APP_PORT` (default is `5000`).
+`python3.11 main.py` to run the web server on port `8001`.
 
 
 #### Routes
