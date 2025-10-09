@@ -24,6 +24,7 @@ RUN poetry install  --no-interaction --no-ansi --no-root
 COPY ./dgrehydro ./dgrehydro
 COPY ./migrations ./migrations
 COPY ./.env ./.env
+COPY ./secrets.ini .
 
 RUN poetry install --no-interaction --no-ansi
 

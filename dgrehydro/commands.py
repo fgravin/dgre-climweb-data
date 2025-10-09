@@ -8,8 +8,11 @@ from sqlalchemy.sql import text
 from dgrehydro import db
 from dgrehydro.ingestors.burkina.geometries_loader import load_river_segments, load_municipalities, load_regions
 from dgrehydro.ingestors.burkina.ingestor_dustwarning import load_warnings
-from dgrehydro.ingestors.burkina.ingestor_flashflood import ingest_flash_floods_from_csv
 from dgrehydro.ingestors.burkina.ingestor_riverine import ingest_riverine_floods_from_csv
+from dgrehydro.ingestors.flashflood.flash_fetch import fetch_waffgs_data
+from dgrehydro.ingestors.flashflood.flash_ingest import ingest_ffgs_data
+from dgrehydro.ingestors.flashflood.flash_service import ingest_flashflood_for_date, ingest_last_flashflood_data, \
+    ingest_flashfloods
 from dgrehydro.models.riverineflood import RiverineFlood
 
 
@@ -66,9 +69,10 @@ def ingest_riverine():
     ingest_riverine_floods_from_csv()
 
 @click.command(name="ingest_flashflood")
-def ingest_flashflood():
-    logging.info("[INGESTION][FLASHFLOOD]: Start")
-    ingest_flash_floods_from_csv()
+@click.argument("date", required=False)
+@click.argument("since", required=False)
+def ingest_flashflood(date: str, since:str ):
+    ingest_flashfloods(date, since)
 
 @click.command(name="ingest_dustwarning")
 def ingest_dustwarning():

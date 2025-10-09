@@ -56,6 +56,7 @@ def upgrade():
                     sa.Column('forecast_date', sa.DateTime(), nullable=False),
                     sa.Column('init_value', sa.Integer(), nullable=False),
                     sa.Column('value', sa.Integer(), nullable=False),
+                    sa.Column('weighted_ffft', sa.Float(), nullable=False),
                     sa.PrimaryKeyConstraint('id'),
                     sa.ForeignKeyConstraint(['subid'], ['dgre_municipality.subid'], ondelete='CASCADE'),
                     sa.UniqueConstraint( 'subid', 'forecast_date', name='unique_flash_flood_date')
