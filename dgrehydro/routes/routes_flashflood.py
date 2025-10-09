@@ -7,6 +7,7 @@ from sqlalchemy import desc
 from dgrehydro import db
 from dgrehydro.models.flashflood import FlashFlood
 from dgrehydro.routes import endpoints
+from dgrehydro.service.flash_db import flashfloods_to_geojson
 
 
 @endpoints.route('/flashflood', strict_slashes=False, methods=['GET'])
@@ -74,3 +75,18 @@ def get_flash_flood_dates():
     except Exception as e:
         logging.error(f"Error fetching flash floods dates: {e}")
         return {"status": "error", "message": str(e)}, 500
+
+@endpoints.route('/flashfloods', strict_slashes=False, methods=['GET'])
+def get_flash_floods_as_geojson():
+    try:
+        today = datetime.datetime.now().strftime("%Y-%m-%d")
+        forecast_date = request.args.get('forecast_date', today)
+        logging.info(f"[GET][FLASH_FLOODS AS GEOJSON] forecast date: {forecast_date}")
+
+        result = flashfloods_to_geojson(forecast_date)
+        return jsonify(result), 200
+
+    except Exception as e:
+        logging.error(f"Error fetching flash floods: dates {e}")
+        return {"status": "error", "message": str(e)}, 500
+
