@@ -9,6 +9,8 @@ from dgrehydro import SETTINGS, db
 from dgrehydro.models.flashflood import FlashFlood
 from dgrehydro.utils import get_dates_from_dataframe
 
+STATIC_DATA_DIR='./dgrehydro/_static_data/'
+
 def assign_vigilance(value):
     if value == 0:
         return 0
@@ -21,7 +23,7 @@ def assign_vigilance(value):
 
 def extract_ffgs_from_source(file_path) -> pd.DataFrame:
     try:
-        static_folder = os.path.join(SETTINGS['DATA_DIR'], "waffgs", "static")
+        static_folder = os.path.join(SETTINGS['STATIC_DATA_DIR'], "waffgs")
 
         ffft_df = pd.read_csv(file_path, delimiter="\t")
         coverage = pd.read_csv(os.path.join(static_folder, "municipality_watershed_coverage.csv"))

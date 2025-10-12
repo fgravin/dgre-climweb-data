@@ -31,9 +31,9 @@ SETTINGS = {
         "path": config['fanfar_ftp']['path']
       }
     },
+    'STATIC_DATA_DIR': './dgrehydro/_static_data/',
     'SQLALCHEMY_DATABASE_URI': os.getenv('SQLALCHEMY_DATABASE_URI'),
     'DATA_RIVERINE_SOURCE_DIR': os.getenv('DATA_RIVERINE_SOURCE_DIR'),
     'DATA_FLASHFLOOD_SOURCE_DIR': os.getenv('DATA_FLASHFLOOD_SOURCE_DIR'),
-    'GEOMETRIES_DATA_DIR': os.getenv('GEOMETRIES_DATA_DIR'),
     'DATA_DIR': os.getenv('DATA_DIR'),
 }

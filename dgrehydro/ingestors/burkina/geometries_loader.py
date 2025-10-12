@@ -1,18 +1,18 @@
 import json
 import logging
 import os
+
 from sqlalchemy import func
 
 from dgrehydro import db
 from dgrehydro.config.country_config import country_config
-from dgrehydro.config.base import SETTINGS
 from dgrehydro.models._geo_municipality import Municipality
 from dgrehydro.models._geo_region import GeoRegion
 from dgrehydro.models._geo_riversegment import RiverSegment
 
-GEOMETRIES_DATA_DIR = SETTINGS.get('GEOMETRIES_DATA_DIR')
+GEOMETRIES_DATA_DIR = './dgrehydro/_static_data/geo'
 RIVER_SEGMENTS_GEOJSON_FILE = 'bfa12_river_segments.geojson'
-MUNICIPALITIES_GEOJSON_FILE = 'bfa12_municipalities.geojson'
+MUNICIPALITIES_GEOJSON_FILE = 'bfa_adm3.geojson'
 REGIONS_GEOJSON_FILE = 'bfa_regions.geojson'
 
 def load_river_segments():
@@ -96,9 +96,9 @@ def load_municipalities():
                     "coordinates": [geom.get("coordinates")]
                 }
 
-            subid = props.get("SUBID")
-            adm3_fr = props.get("ADM3_FR")
-            adm2_fr = props.get("ADM2_FR")
+            subid = props.get("subid")
+            adm3_fr = props.get("adm3_fr")
+            adm2_fr = props.get("adm2_fr")
 
             municipality = {
                 "subid": subid,

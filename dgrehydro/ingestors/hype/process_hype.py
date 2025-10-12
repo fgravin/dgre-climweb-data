@@ -24,7 +24,7 @@ def wldef(subid, thisq1, retlev2, wl_rp):
 def process_hype_data(model: str, date_str: str) -> bool:
     root_data_dir = os.path.join(SETTINGS.get('DATA_DIR'), HYPE_FOLDER)
     data_dir = os.path.join(root_data_dir, model, date_str)
-    static_dir =  os.path.join(SETTINGS.get('DATA_DIR'), 'static', HYPE_FOLDER)
+    static_dir = os.path.join(SETTINGS['STATIC_DATA_DIR'], "hype")
 
     if not os.path.exists(data_dir):
         logging.warn(f"[HYPE][PROCESS] Data have not been downloaded yet for date {date_str}.")
