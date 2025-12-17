@@ -6,13 +6,11 @@ import click
 from sqlalchemy.sql import text
 
 from dgrehydro import db
-from dgrehydro.ingestors.burkina.geometries_loader import load_river_segments, load_municipalities, load_regions
-from dgrehydro.ingestors.burkina.ingestor_dustwarning import load_warnings
+from dgrehydro.ingestors.burkina.geometries_loader import load_river_segments, load_municipalities, load_regions, \
+    load_poi_stations
+from dgrehydro.ingestors.burkina.ingestor_poiflow import ingest_poi_flow_from_csv
 from dgrehydro.ingestors.burkina.ingestor_riverine import ingest_riverine_floods_from_csv
-from dgrehydro.ingestors.flashflood.flash_fetch import fetch_waffgs_data
-from dgrehydro.ingestors.flashflood.flash_ingest import ingest_ffgs_data
-from dgrehydro.ingestors.flashflood.flash_service import ingest_flashflood_for_date, ingest_last_flashflood_data, \
-    ingest_flashfloods
+from dgrehydro.ingestors.flashflood.flash_service import ingest_flashfloods
 from dgrehydro.models.riverineflood import RiverineFlood
 
 
@@ -62,11 +60,36 @@ def load_geometries():
     load_river_segments()
     load_municipalities()
     load_regions()
+    load_poi_stations()
 
 @click.command(name="ingest_riverine")
-def ingest_riverine():
+@click.argument("date", required=False)
+@click.argument("since", required=False)
+@click.option("--model", default=None, help="Specific HYPE model to ingest")
+@click.option("--csv", is_flag=True, help="Ingest from CSV instead of HYPE FTP")
+def ingest_riverine(date: str, since: str, model: str, csv: bool):
+    """
+    Ingest riverine flood data.
+
+    By default, fetches and processes HYPE model data from FTP.
+    Use --csv flag to ingest from local CSV files instead.
+
+    Examples:
+        flask --app=dgrehydro ingest_riverine              # Latest HYPE data
+        flask --app=dgrehydro ingest_riverine 20251212     # Specific date
+        flask --app=dgrehydro ingest_riverine 20251201 since  # Since date
+        flask --app=dgrehydro ingest_riverine --csv        # From CSV files
+    """
     logging.info("[INGESTION][RIVERINE]: Start")
-    ingest_riverine_floods_from_csv()
+
+    if csv:
+        # Use CSV ingestion (legacy method)
+        logging.info("[INGESTION][RIVERINE]: Using CSV ingestion")
+        ingest_riverine_floods_from_csv()
+    else:
+        # Use HYPE service (default method)
+        logging.info("[INGESTION][RIVERINE]: Using HYPE FTP ingestion")
+        #ingest_riverine_hype(date=date, since=since, model=model)
 
 @click.command(name="ingest_flashflood")
 @click.argument("date", required=False)
@@ -74,10 +97,11 @@ def ingest_riverine():
 def ingest_flashflood(date: str, since:str ):
     ingest_flashfloods(date, since)
 
-@click.command(name="ingest_dustwarning")
-def ingest_dustwarning():
-    logging.info("[INGESTION][DUST_WARNINGS]: Start")
-    load_warnings()
+@click.command(name="ingest_poiflow")
+def ingest_poiflow():
+    logging.info("[INGESTION][POI_FLOW]: Start")
+    ingest_poi_flow_from_csv()
+    logging.info("[INGESTION][POI_FLOW]: Done")
 
 ########################
 # UPDATE COMMANDS

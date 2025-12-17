@@ -46,6 +46,7 @@ health.add_check(db_available)
 import dgrehydro.routes.routes_flashflood
 import dgrehydro.routes.routes_riverineflood
 import dgrehydro.routes.routes_dustwarning
+import dgrehydro.routes.routes_poiflow
 
 app.register_blueprint(endpoints, url_prefix='/api/v1')
 
@@ -58,3 +59,4 @@ app.cli.add_command(commands.ingest_riverine)
 app.cli.add_command(commands.ingest_flashflood)
 app.cli.add_command(commands.update_riverine)
 app.cli.add_command(commands.ingest_dustwarning)
+app.cli.add_command(commands.ingest_poiflow)

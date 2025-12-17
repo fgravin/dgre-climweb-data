@@ -1,3 +1,4 @@
+import csv
 import json
 import logging
 import os
@@ -9,11 +10,14 @@ from dgrehydro.config.country_config import country_config
 from dgrehydro.models._geo_municipality import Municipality
 from dgrehydro.models._geo_region import GeoRegion
 from dgrehydro.models._geo_riversegment import RiverSegment
+from dgrehydro.models._geo_poistation import PoiStation
 
 GEOMETRIES_DATA_DIR = './dgrehydro/_static_data/geo'
+STATIC_DATA_DIR = './dgrehydro/_static_data'
 RIVER_SEGMENTS_GEOJSON_FILE = 'bfa12_river_segments.geojson'
 MUNICIPALITIES_GEOJSON_FILE = 'bfa_adm3.geojson'
 REGIONS_GEOJSON_FILE = 'bfa_regions.geojson'
+POI_STATIONS_CSV_FILE = 'poi_stations.csv'
 
 def load_river_segments():
     logging.info("[GEOMETRIES LOADING][SEGMENTS]: Loading river segments")
@@ -200,3 +204,55 @@ def load_regions():
                     db.session.add(db_georegion)
 
                 db.session.commit()
+
+
+def load_poi_stations():
+    """
+    Load POI station locations from CSV file.
+    Creates point geometries from latitude/longitude coordinates.
+    """
+    logging.info("[GEOMETRIES LOADING][POI_STATIONS]: Loading POI stations")
+
+    csv_file = os.path.join(GEOMETRIES_DATA_DIR, POI_STATIONS_CSV_FILE)
+
+    if not os.path.exists(csv_file):
+        logging.error(f"[GEOMETRIES LOADING][POI_STATIONS]: File {csv_file} does not exist")
+        return
+
+    logging.info(f"[GEOMETRIES LOADING][POI_STATIONS]: Loading {csv_file}")
+
+    with open(csv_file, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+
+        for row in reader:
+            station_name = row['station_name']
+            name_fr = row['name_fr']
+            latitude = float(row['latitude'])
+            longitude = float(row['longitude'])
+
+            # Create point geometry from coordinates
+            poi_station_data = {
+                "station_name": station_name,
+                "name_fr": name_fr,
+                "latitude": latitude,
+                "longitude": longitude,
+                "geom": func.ST_SetSRID(func.ST_MakePoint(longitude, latitude), 4326)
+            }
+
+            db_poi_station = PoiStation.query.get(station_name)
+            exists = False
+
+            if db_poi_station:
+                exists = True
+
+            db_poi_station = PoiStation(**poi_station_data)
+
+            if exists:
+                logging.info(f'[GEOMETRIES LOADING][POI_STATIONS]: UPDATE {station_name}')
+                db.session.merge(db_poi_station)
+            else:
+                logging.info(f'[GEOMETRIES LOADING][POI_STATIONS]: ADD {station_name}')
+                db.session.add(db_poi_station)
+
+        db.session.commit()
+        logging.info('[GEOMETRIES LOADING][POI_STATIONS]: Done')

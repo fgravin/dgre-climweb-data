@@ -50,8 +50,20 @@ Ideally, ingestion commands should be run in a cron job or similar scheduling sy
 run them manually:
 
 ```bash
-flask --app=dgrehydro ingest_riverine
-flask --app=dgregydro ingest_flashflood
+# Riverine floods (HYPE models from FTP)
+flask --app=dgrehydro ingest_riverine              # Latest data from all models
+flask --app=dgrehydro ingest_riverine 20251212     # Specific date
+flask --app=dgrehydro ingest_riverine 20251201 since  # All dates since
+flask --app=dgrehydro ingest_riverine --csv        # From CSV files (legacy)
+
+# Flash floods
+flask --app=dgrehydro ingest_flashflood            # Latest data
+flask --app=dgrehydro ingest_flashflood 20251212   # Specific date
+
+# POI flow
+flask --app=dgrehydro ingest_poiflow               # Latest CSV file
+
+# Update specific record
 flask --app=dgrehydro update_riverine 200384 2025-05-25 2025-05-25 40
 ```
 
@@ -64,6 +76,7 @@ flask --app=dgrehydro update_riverine 200384 2025-05-25 2025-05-25 40
 
 #### Routes
 
+##### Riverine Flood
 * GET http://localhost:8001/api/v1/riverineflood
 * POST http://localhost:8001/api/v1/riverineflood/<subid>
 
@@ -76,6 +89,7 @@ flask --app=dgrehydro update_riverine 200384 2025-05-25 2025-05-25 40
   }
 ```
 
+##### Flash Flood
 * GET http://localhost:8001/api/v1/flashflood
 * POST http://localhost:8001/api/v1/flashflood/<subid>
 
@@ -84,6 +98,25 @@ flask --app=dgrehydro update_riverine 200384 2025-05-25 2025-05-25 40
   {
     "value": 52,
     "forecast_date": "2025-07-01"
+  }
+```
+
+##### POI Flow (Real-time and Forecast)
+* GET http://localhost:8001/api/v1/poiflow - Get POI flow data with optional filters
+  * Query params: `station_name`, `measurement_date`, `forecast_date`, `realtime_only`
+* GET http://localhost:8001/api/v1/poiflow/latest - Get latest real-time measurements for all stations
+* GET http://localhost:8001/api/v1/poiflow/stations - Get list of all available stations
+* GET http://localhost:8001/api/v1/poiflow/forecast_dates - Get all forecast dates for the latest measurement
+* GET http://localhost:8001/api/v1/poiflow/<station_name>/forecast - Get forecast data for a specific station
+* POST http://localhost:8001/api/v1/poiflow/<station_name> - Update POI flow data
+
+```
+  Content-Type: application/json
+  {
+    "measurement_date": "2025-10-31T00:00:00",
+    "forecast_date": "2025-11-01T00:00:00",
+    "flow": 8.867,
+    "water_level": 0.436
   }
 ```
 
