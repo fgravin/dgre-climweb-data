@@ -4,7 +4,8 @@ from dgrehydro.ingestors.hype.process_hype import process_hype_data
 
 
 def test_ingest_hype(monkeypatch):
-    monkeypatch.setitem(SETTINGS, 'DATA_DIR', "../data")
-    result = process_hype_data(HYPE_MODELS[4].get('path'), '20251009')
+    monkeypatch.setitem(SETTINGS, 'DATA_DIR', "./resources/fanfar")
+    monkeypatch.setitem(SETTINGS, 'STATIC_DATA_DIR', "./resources/_static_data")
+    result = process_hype_data(HYPE_MODELS[4].get('path'), '20250801')
     assert result is True
 

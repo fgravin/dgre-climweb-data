@@ -2,7 +2,7 @@ from ftplib import FTP
 from typing import TypedDict, List
 import logging
 import os
-from datetime import date
+from datetime import date, datetime
 
 from dgrehydro import SETTINGS
 
@@ -37,10 +37,9 @@ HYPE_MODELS: List[HypeModel] = [
 
 fanfar_ftp = SETTINGS.get('secrets').get('fanfar_ftp')
 
-def fetch_daily_hype_data():
+def fetch_daily_hype_data(utc_time: datetime = datetime.utcnow()):
 
-    today = date.today()
-    forecast_issue_date = today.strftime("%Y%m%d")
+    forecast_issue_date = utc_time.strftime("%Y%m%d")
     logging.info("[HYPE][FETCH]: Start for date %s", forecast_issue_date)
     root_dest_folder = os.path.abspath(os.path.join(SETTINGS.get('DATA_DIR'), HYPE_FOLDER))
 
