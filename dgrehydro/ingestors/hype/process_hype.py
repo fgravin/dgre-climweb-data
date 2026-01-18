@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 
 import pandas as pd
 import numpy as np
@@ -58,11 +59,11 @@ def process_hype_data(model: str, date_str: str) -> bool:
     hindcast_data = hindcast_data.drop(hindcast_data.index[0])
     hindcast_data.insert(0, "SUBID", hindcast_data.index.str.replace("X", ""))
     hindcast_data.insert(0, "index", range(1, len(hindcast_data) + 1))
-    forecast_data.to_csv(os.path.join(data_dir, "hindcast.csv"), index=False)
+    hindcast_data.to_csv(os.path.join(data_dir, "hindcast.csv"), index=False)
 
     # 3. Prepare colorscales
     # Read return level thresholds
-    retlev = pd.read_csv(threshold_file, delim_whitespace=True)
+    retlev = pd.read_csv(threshold_file, sep='\s+')
     retlev2 = retlev.drop(columns=["SUBID"]).T
     retlev2.columns = retlev["SUBID"].astype(str)
 
@@ -130,60 +131,46 @@ def process_hype_data(model: str, date_str: str) -> bool:
     colorscales_df.insert(0, "index", range(1, len(colorscales_df) + 1))
     colorscales_df.columns = ["index", "SUBID"] + [f"day{i+1}" for i in range(len(all_dates))] + ["max"]
 
-    colorscales_csv = os.path.join(data_dir, "colorscales.csv")
-    colorscales_csv1 = os.path.join(data_dir, "colorscales1.csv")
-    colorscales_df.to_csv(colorscales_csv, index=False)
-    colorscales_df.to_csv(colorscales_csv1, index=False)
-    print(f"Saved colorscales to: {colorscales_csv}")
-
     # Create forecast dates file
     forecast_dates_df = pd.DataFrame({
         "Jour": [f"day{i+1}" for i in range(len(all_dates))] + ["max"],
         "Date": [str(d)[:10] for d in all_dates] + ["Max of 10 days forecast"]
     })
 
-    forecast_dates_csv = os.path.join(data_dir, "forecast_dates.csv")
-    forecast_dates_df.to_csv(forecast_dates_csv, index=False)
-    print(f"Saved forecast dates to: {forecast_dates_csv}")
+    riverine_floods = []
 
-    # Special handling for Burkina (model index 5): copy to riverine_flood directory
-    print("Copying files to riverine_flood directory...")
+    day_cols = [col for col in colorscales_df.columns if re.match(r'^day\d+$', col)]
+    day_date_map = map_day_date(forecast_dates_df)
+    init_date = pd.to_datetime(day_date_map[day_cols[0]])
 
-    # Add a row of zeros to colorscales
-    colorscales_df_copy = pd.concat([
-        colorscales_df,
-        pd.DataFrame([0] * len(colorscales_df.columns)).T
-    ], ignore_index=True)
-    colorscales_df_copy.columns = colorscales_df.columns
+    for _, row in colorscales_df.iterrows():
+        fid = int(row["index"])
+        subid = str(row["SUBID"])
 
-    colorscales_df_copy.to_csv(os.path.join(data_dir, "colorscales.csv"), index=False)
-    colorscales_df_copy.to_csv(os.path.join(data_dir, "colorscales1.csv"), index=False)
-    forecast_dates_df.to_csv(os.path.join(data_dir, "forecast_dates.csv"), index=False)
-    print(f"Copied files to: {data_dir}")
+        db_river_segment = RiverSegment.query.get(subid)
+        if db_river_segment is None:
+            logging.warn(f"[HYPE][PROCESS] SubID {subid} not found in RiverSegment table. Skipping.")
+            continue
 
+        for day_col in day_cols:
+            date = day_date_map[day_col]
+            forecast_date = pd.to_datetime(date)
+            value = int(row[day_col])
+            rf = RiverineFlood(
+                fid=fid,
+                subid=subid,
+                init_date=init_date,
+                forecast_date=forecast_date,
+                init_value=value,
+                value=value
+            )
+            riverine_floods.append(rf)
+    return riverine_floods
 
-    # riverine_floods = []
-    # for _, row in thiswl_df2.iterrows():
-    #     fid = int(row["index"])
-    #     subid = str(row["SUBID"])
-    #
-    #     db_river_segment = RiverSegment.query.get(subid)
-    #     if db_river_segment is None:
-    #         logging.warning(f"[HYPE][PROCESS] RiverSegment with SUBID {subid} not found in database. Skipping.")
-    #         continue
-    #
-    #     for date in list(all_dates[:10]):
-    #         forecast_date = pd.to_datetime(date)
-    #         value = int(row[date])
-    #         rf = RiverineFlood(
-    #             fid=fid,
-    #             subid=subid,
-    #             init_date=date_str,
-    #             forecast_date=forecast_date,
-    #             init_value=value,
-    #             value=value
-    #         )
-    #         riverine_floods.append(rf)
-    # return riverine_floods
-
-
+def map_day_date(df):
+    mapping = {
+        row["Jour"]: row["Date"]
+        for _, row in df.iterrows()
+        if re.match(r"\d{4}-\d{2}-\d{2}", str(row["Date"]))
+    }
+    return mapping

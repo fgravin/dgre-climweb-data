@@ -13,22 +13,22 @@ class HypeModel(TypedDict):
     path: str
 
 HYPE_MODELS: List[HypeModel] = [
-    {
-        "name": "Niger HYPE v2.30",
-        "path": "niger-hype2.30_hgfd3.2_ecoper_noEOWL_noINSITU"
-    },
-    {
-        "name": "Niger HYPE v2.30 + Updating with local stations",
-        "path": "niger-hype2.30_hgfd3.2_ecoper_noEOWL_INSITU-AR"
-    },
-    {
-        "name": "West-Africa HYPE v1.2",
-        "path": "wa-hype1.2_hgfd3.2_ecoper_noEOWL_noINSITU"
-    },
-    {
-        "name": "West-Africa HYPE v1.2 + Updating with local stations",
-        "path": "wa-hype1.2_hgfd3.2_ecoper_noEOWL_INSITU-AR"
-    },
+    # {
+    #     "name": "Niger HYPE v2.30",
+    #     "path": "niger-hype2.30_hgfd3.2_ecoper_noEOWL_noINSITU"
+    # },
+    # {
+    #     "name": "Niger HYPE v2.30 + Updating with local stations",
+    #     "path": "niger-hype2.30_hgfd3.2_ecoper_noEOWL_INSITU-AR"
+    # },
+    # {
+    #     "name": "West-Africa HYPE v1.2",
+    #     "path": "wa-hype1.2_hgfd3.2_ecoper_noEOWL_noINSITU"
+    # },
+    # {
+    #     "name": "West-Africa HYPE v1.2 + Updating with local stations",
+    #     "path": "wa-hype1.2_hgfd3.2_ecoper_noEOWL_INSITU-AR"
+    # },
     {
         "name": "bf-hype1.0_chirps2.0_gefs_noEOWL_noINSITU",
         "path": "bf-hype1.0_chirps2.0_gefs_noEOWL_noINSITU"
