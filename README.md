@@ -54,16 +54,18 @@ run them manually:
 flask --app=dgrehydro ingest_riverine              # Latest data from all models
 flask --app=dgrehydro ingest_riverine 20251212     # Specific date
 flask --app=dgrehydro ingest_riverine 20251201 since  # All dates since
-flask --app=dgrehydro ingest_riverine --csv        # From CSV files (legacy)
 
 # Flash floods
 flask --app=dgrehydro ingest_flashflood            # Latest data
 flask --app=dgrehydro ingest_flashflood 20251212   # Specific date
+flask --app=dgrehydro ingest_flashflood 20251201 since  # All dates since
 
 # POI flow
-flask --app=dgrehydro ingest_poiflow               # Latest CSV file
+flask --app=dgrehydro ingest_poiflow               # Ingest from CSV file
 
 # Update specific record
+flask --app=dgrehydro update_riverine <subid> <init_date> <forecast_date> <value>
+# Example:
 flask --app=dgrehydro update_riverine 200384 2025-05-25 2025-05-25 40
 ```
 
