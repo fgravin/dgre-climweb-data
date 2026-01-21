@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from dgrehydro import db
 from dgrehydro.ingestors.critical_points.critpoint_fetch import fetch_critpoint_data
-from dgrehydro.ingestors.critical_points.critpoint_ingest import extract_db_poi_flows_from_csv
+from dgrehydro.ingestors.critical_points.critpoint_ingest import extract_db_critical_points_from_csv
 
 
 def ingest_critpoint_data(date: str, since: str):
@@ -74,13 +74,13 @@ def ingest_critpoint_for_date(date: str):
     # Process CSV and ingest into database
     logging.info("[INGESTION][CRITPOINT]: Processing CSV for date %s", date)
     try:
-        db_poi_flows = extract_db_poi_flows_from_csv(csv_path)
-        logging.info("[INGESTION][CRITPOINT]: Ingest %d records in database", len(db_poi_flows))
+        db_critical_points = extract_db_critical_points_from_csv(csv_path)
+        logging.info("[INGESTION][CRITPOINT]: Ingest %d records in database", len(db_critical_points))
 
-        for db_poi_flow in db_poi_flows:
-            db.session.add(db_poi_flow)
+        for db_critical_point in db_critical_points:
+            db.session.add(db_critical_point)
 
-        db.session.flush(db_poi_flows)
+        db.session.flush(db_critical_points)
         db.session.commit()
         logging.info("[INGESTION][CRITPOINT]: Done for date %s", date)
 

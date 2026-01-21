@@ -3,10 +3,10 @@ from datetime import timedelta
 
 import pandas as pd
 
-from dgrehydro.models.poiflow import PoiFlow
+from dgrehydro.models.criticalpoint import CriticalPoint
 
 
-def extract_db_poi_flows_from_csv(csv_path: str) -> list[PoiFlow]:
+def extract_db_critical_points_from_csv(csv_path: str) -> list[CriticalPoint]:
     """
     Parse POI flow CSV and create database objects.
 
@@ -19,7 +19,7 @@ def extract_db_poi_flows_from_csv(csv_path: str) -> list[PoiFlow]:
         csv_path: Path to the CSV file to process
 
     Returns:
-        List of PoiFlow database objects
+        List of CriticalPoint database objects
     """
     logging.info("[CRITPOINT][INGEST]: Processing CSV %s", csv_path)
 
@@ -29,7 +29,7 @@ def extract_db_poi_flows_from_csv(csv_path: str) -> list[PoiFlow]:
     # Clean column names (remove BOM and extra spaces)
     df.columns = df.columns.str.strip().str.replace('\ufeff', '')
 
-    poi_flows = []
+    critical_points = []
 
     # Parse station columns (every pair of columns after Date and Offset)
     stations = extract_station_names(df.columns)
@@ -59,21 +59,21 @@ def extract_db_poi_flows_from_csv(csv_path: str) -> list[PoiFlow]:
                 if limni_col in df.columns:
                     water_level = float(row[limni_col]) if pd.notna(row[limni_col]) else None
 
-                poi_flow = PoiFlow(
+                critical_point = CriticalPoint(
                     station_name=station_name,
                     measurement_date=measurement_date,
                     forecast_date=forecast_date,
                     flow=flow,
                     water_level=water_level
                 )
-                poi_flows.append(poi_flow)
+                critical_points.append(critical_point)
 
         except Exception as e:
             logging.error("[CRITPOINT][INGEST]: Error processing row: %s", str(e))
             continue
 
-    logging.info("[CRITPOINT][INGEST]: Extracted %d POI flow records", len(poi_flows))
-    return poi_flows
+    logging.info("[CRITPOINT][INGEST]: Extracted %d critical point records", len(critical_points))
+    return critical_points
 
 
 def extract_station_names(columns) -> list[str]:

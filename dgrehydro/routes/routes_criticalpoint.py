@@ -1,18 +1,17 @@
-import datetime
 import logging
 
 from flask import request, jsonify
 from sqlalchemy import desc
 
 from dgrehydro import db
-from dgrehydro.models.poiflow import PoiFlow
+from dgrehydro.models.criticalpoint import CriticalPoint
 from dgrehydro.routes import endpoints
 
 
-@endpoints.route('/poiflow', strict_slashes=False, methods=['GET'])
-def get_poi_flows():
+@endpoints.route('/criticalpoint', strict_slashes=False, methods=['GET'])
+def get_critical_points():
     """
-    Get POI flow data with optional filters.
+    Get critical point data with optional filters.
 
     Query parameters:
     - station_name: Filter by station name (Dan, Diarabakoko, Gampela, Heredougou, Nobere, Rakaye)
@@ -26,81 +25,81 @@ def get_poi_flows():
         forecast_date = request.args.get('forecast_date')
         realtime_only = request.args.get('realtime_only', 'false').lower() == 'true'
 
-        logging.info(f"[GET][POI_FLOW] Filters: station={station_name}, measurement_date={measurement_date}, "
+        logging.info(f"[GET][CRITICAL_POINT] Filters: station={station_name}, measurement_date={measurement_date}, "
                     f"forecast_date={forecast_date}, realtime_only={realtime_only}")
 
-        query = PoiFlow.query
+        query = CriticalPoint.query
 
         if station_name:
-            query = query.filter(PoiFlow.station_name == station_name)
+            query = query.filter(CriticalPoint.station_name == station_name)
 
         if measurement_date:
-            query = query.filter(db.func.date(PoiFlow.measurement_date) == measurement_date)
+            query = query.filter(db.func.date(CriticalPoint.measurement_date) == measurement_date)
 
         if forecast_date:
-            query = query.filter(db.func.date(PoiFlow.forecast_date) == forecast_date)
+            query = query.filter(db.func.date(CriticalPoint.forecast_date) == forecast_date)
 
         if realtime_only:
-            query = query.filter(PoiFlow.measurement_date == PoiFlow.forecast_date)
+            query = query.filter(CriticalPoint.measurement_date == CriticalPoint.forecast_date)
 
         # Order by measurement date and station name
-        query = query.order_by(desc(PoiFlow.measurement_date), PoiFlow.station_name)
+        query = query.order_by(desc(CriticalPoint.measurement_date), CriticalPoint.station_name)
 
-        poi_flows = query.all()
-        return [flow.serialize() for flow in poi_flows], 200
+        critical_points = query.all()
+        return [cp.serialize() for cp in critical_points], 200
 
     except Exception as e:
-        logging.error(f"[GET][POI_FLOW] Error fetching POI flows: {e}")
+        logging.error(f"[GET][CRITICAL_POINT] Error fetching critical points: {e}")
         return {"status": "error", "message": str(e)}, 500
 
 
-@endpoints.route('/poiflow/stations', strict_slashes=False, methods=['GET'])
-def get_poi_flow_stations():
+@endpoints.route('/criticalpoint/stations', strict_slashes=False, methods=['GET'])
+def get_critical_point_stations():
     """
-    Get list of all available POI stations.
+    Get list of all available critical point stations.
     """
     try:
-        stations = db.session.query(PoiFlow.station_name).distinct().order_by(PoiFlow.station_name).all()
+        stations = db.session.query(CriticalPoint.station_name).distinct().order_by(CriticalPoint.station_name).all()
         station_list = [station[0] for station in stations]
 
         return jsonify({"stations": station_list}), 200
 
     except Exception as e:
-        logging.error(f"[GET][POI_FLOW] Error fetching stations: {e}")
+        logging.error(f"[GET][CRITICAL_POINT] Error fetching stations: {e}")
         return {"status": "error", "message": str(e)}, 500
 
 
-@endpoints.route('/poiflow/latest', strict_slashes=False, methods=['GET'])
-def get_latest_poi_flows():
+@endpoints.route('/criticalpoint/latest', strict_slashes=False, methods=['GET'])
+def get_latest_critical_points():
     """
     Get the latest real-time measurements for all stations.
     """
     try:
         # Get the most recent measurement date
-        latest_measurement = db.session.query(db.func.max(PoiFlow.measurement_date)).scalar()
+        latest_measurement = db.session.query(db.func.max(CriticalPoint.measurement_date)).scalar()
 
         if not latest_measurement:
             return {"status": "error", "message": "No data available"}, 404
 
         # Get all real-time data (measurement_date == forecast_date) for that date
-        query = PoiFlow.query.filter(
-            PoiFlow.measurement_date == latest_measurement,
-            PoiFlow.measurement_date == PoiFlow.forecast_date
-        ).order_by(PoiFlow.station_name)
+        query = CriticalPoint.query.filter(
+            CriticalPoint.measurement_date == latest_measurement,
+            CriticalPoint.measurement_date == CriticalPoint.forecast_date
+        ).order_by(CriticalPoint.station_name)
 
-        poi_flows = query.all()
+        critical_points = query.all()
         return jsonify({
             "measurement_date": latest_measurement.isoformat(),
-            "data": [flow.serialize() for flow in poi_flows]
+            "data": [cp.serialize() for cp in critical_points]
         }), 200
 
     except Exception as e:
-        logging.error(f"[GET][POI_FLOW] Error fetching latest POI flows: {e}")
+        logging.error(f"[GET][CRITICAL_POINT] Error fetching latest critical points: {e}")
         return {"status": "error", "message": str(e)}, 500
 
 
-@endpoints.route('/poiflow/<station_name>/forecast', strict_slashes=False, methods=['GET'])
-def get_station_forecast(station_name):
+@endpoints.route('/criticalpoint/<station_name>/forecast', strict_slashes=False, methods=['GET'])
+def get_critical_point_station_forecast(station_name):
     """
     Get forecast data for a specific station.
 
@@ -110,41 +109,41 @@ def get_station_forecast(station_name):
     try:
         measurement_date = request.args.get('measurement_date')
 
-        logging.info(f"[GET][POI_FLOW] Getting forecast for station: {station_name}, date: {measurement_date}")
+        logging.info(f"[GET][CRITICAL_POINT] Getting forecast for station: {station_name}, date: {measurement_date}")
 
-        query = PoiFlow.query.filter(PoiFlow.station_name == station_name)
+        query = CriticalPoint.query.filter(CriticalPoint.station_name == station_name)
 
         if measurement_date:
-            query = query.filter(db.func.date(PoiFlow.measurement_date) == measurement_date)
+            query = query.filter(db.func.date(CriticalPoint.measurement_date) == measurement_date)
         else:
             # Get the latest measurement date for this station
-            latest_date = db.session.query(db.func.max(PoiFlow.measurement_date)).filter(
-                PoiFlow.station_name == station_name
+            latest_date = db.session.query(db.func.max(CriticalPoint.measurement_date)).filter(
+                CriticalPoint.station_name == station_name
             ).scalar()
             if latest_date:
-                query = query.filter(PoiFlow.measurement_date == latest_date)
+                query = query.filter(CriticalPoint.measurement_date == latest_date)
 
-        query = query.order_by(PoiFlow.forecast_date)
-        poi_flows = query.all()
+        query = query.order_by(CriticalPoint.forecast_date)
+        critical_points = query.all()
 
-        if not poi_flows:
+        if not critical_points:
             return {"status": "error", "message": f"No data found for station {station_name}"}, 404
 
         return jsonify({
             "station_name": station_name,
-            "measurement_date": poi_flows[0].measurement_date.isoformat(),
-            "forecast": [flow.serialize() for flow in poi_flows]
+            "measurement_date": critical_points[0].measurement_date.isoformat(),
+            "forecast": [cp.serialize() for cp in critical_points]
         }), 200
 
     except Exception as e:
-        logging.error(f"[GET][POI_FLOW] Error fetching forecast: {e}")
+        logging.error(f"[GET][CRITICAL_POINT] Error fetching forecast: {e}")
         return {"status": "error", "message": str(e)}, 500
 
 
-@endpoints.route('/poiflow/<station_name>', strict_slashes=False, methods=['POST'])
-def update_poi_flow(station_name):
+@endpoints.route('/criticalpoint/<station_name>', strict_slashes=False, methods=['POST'])
+def update_critical_point(station_name):
     """
-    Update POI flow data for a specific station.
+    Update critical point data for a specific station.
 
     Expected JSON body:
     {
@@ -155,9 +154,9 @@ def update_poi_flow(station_name):
     }
     """
     try:
-        logging.info(f"[UPDATE][POI_FLOW]: Update POI flow for station {station_name}")
+        logging.info(f"[UPDATE][CRITICAL_POINT]: Update critical point for station {station_name}")
         data = request.json
-        logging.info(f"[UPDATE][POI_FLOW] data: {data}")
+        logging.info(f"[UPDATE][CRITICAL_POINT] data: {data}")
 
         measurement_date = data.get('measurement_date')
         forecast_date = data.get('forecast_date')
@@ -169,14 +168,14 @@ def update_poi_flow(station_name):
         if not forecast_date:
             return {"status": "error", "message": "forecast_date is required"}, 400
 
-        db_record = PoiFlow.query.filter_by(
+        db_record = CriticalPoint.query.filter_by(
             station_name=station_name,
             measurement_date=measurement_date,
             forecast_date=forecast_date
         ).first()
 
         if db_record is None:
-            logging.error(f"[UPDATE][POI_FLOW]: Record not found for {station_name} at {measurement_date} with forecast_date {forecast_date}")
+            logging.error(f"[UPDATE][CRITICAL_POINT]: Record not found for {station_name} at {measurement_date} with forecast_date {forecast_date}")
             return {"status": "error", "message": "Record not found"}, 404
 
         if flow is not None:
@@ -189,29 +188,29 @@ def update_poi_flow(station_name):
         return db_record.serialize(), 200
 
     except Exception as e:
-        logging.error(f"[UPDATE][POI_FLOW] Error updating POI flow: {e}")
+        logging.error(f"[UPDATE][CRITICAL_POINT] Error updating critical point: {e}")
         return {"status": "error", "message": str(e)}, 500
 
 
-@endpoints.route('/poiflow/forecast_dates', strict_slashes=False, methods=['GET'])
-def get_poi_flow_measurement_dates():
+@endpoints.route('/criticalpoint/forecast_dates', strict_slashes=False, methods=['GET'])
+def get_critical_point_measurement_dates():
     """
     Get list of all forecast dates for the latest measurement date.
     Returns the forecast horizons (real-time + 11 days) for the most recent measurement.
     """
     try:
-        logging.info("[GET][POI_FLOW]: Get forecast dates for latest measurement")
+        logging.info("[GET][CRITICAL_POINT]: Get forecast dates for latest measurement")
 
         # Get the latest measurement date
-        latest_measurement = db.session.query(db.func.max(PoiFlow.measurement_date)).scalar()
+        latest_measurement = db.session.query(db.func.max(CriticalPoint.measurement_date)).scalar()
 
         if not latest_measurement:
             return {"status": "error", "message": "No data available"}, 404
 
         # Get all distinct forecast dates for the latest measurement date
-        forecast_dates = db.session.query(PoiFlow.forecast_date).filter(
-            PoiFlow.measurement_date == latest_measurement
-        ).distinct().order_by(PoiFlow.forecast_date).all()
+        forecast_dates = db.session.query(CriticalPoint.forecast_date).filter(
+            CriticalPoint.measurement_date == latest_measurement
+        ).distinct().order_by(CriticalPoint.forecast_date).all()
 
         date_list = [date[0].strftime("%Y-%m-%dT%H:%M:%S.000Z") for date in forecast_dates]
 
@@ -223,5 +222,5 @@ def get_poi_flow_measurement_dates():
         return jsonify(response), 200
 
     except Exception as e:
-        logging.error(f"[GET][POI_FLOW] Error fetching forecast dates: {e}")
+        logging.error(f"[GET][CRITICAL_POINT] Error fetching forecast dates: {e}")
         return {"status": "error", "message": str(e)}, 500

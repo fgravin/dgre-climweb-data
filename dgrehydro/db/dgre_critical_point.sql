@@ -29,8 +29,8 @@ CREATE TRIGGER trigger_update_poi_station_geom
     FOR EACH ROW
     EXECUTE FUNCTION public.update_poi_station_geom();
 
--- Main function to generate MVT tiles for POI flow data
-CREATE OR REPLACE FUNCTION public.dgre_poi_flow(
+-- Main function to generate MVT tiles for critical point data
+CREATE OR REPLACE FUNCTION public.dgre_critical_point(
     z integer,
     x integer,
     y integer,
@@ -47,7 +47,7 @@ DECLARE
 BEGIN
     -- Get the latest measurement date
     SELECT MAX(measurement_date) INTO latest_measurement
-    FROM public.dgre_poi_flow;
+    FROM public.dgre_critical_point;
 
     WITH
         bounds AS (
@@ -59,39 +59,39 @@ BEGIN
                 ST_AsMVTGeom(ST_Transform(s.geom, 3857), bounds.geom) AS geom,
                 s.station_name,
                 s.name_fr,
-                pf.flow,
-                pf.water_level,
-                pf.measurement_date,
-                pf.forecast_date,
+                cp.flow,
+                cp.water_level,
+                cp.measurement_date,
+                cp.forecast_date,
                 -- Calculate if this is real-time data
                 CASE
-                    WHEN pf.measurement_date = pf.forecast_date THEN true
+                    WHEN cp.measurement_date = cp.forecast_date THEN true
                     ELSE false
                 END AS is_realtime,
                 -- Calculate forecast horizon in hours
-                EXTRACT(EPOCH FROM (pf.forecast_date - pf.measurement_date)) / 3600 AS forecast_horizon_hours,
+                EXTRACT(EPOCH FROM (cp.forecast_date - cp.measurement_date)) / 3600 AS forecast_horizon_hours,
                 -- Add flow level classification (customize thresholds as needed)
                 CASE
-                    WHEN pf.flow IS NULL THEN 'No Data'
-                    WHEN pf.flow < 5 THEN 'Low'
-                    WHEN pf.flow < 15 THEN 'Normal'
-                    WHEN pf.flow < 30 THEN 'High'
-                    WHEN pf.flow < 50 THEN 'Very High'
+                    WHEN cp.flow IS NULL THEN 'No Data'
+                    WHEN cp.flow < 5 THEN 'Low'
+                    WHEN cp.flow < 15 THEN 'Normal'
+                    WHEN cp.flow < 30 THEN 'High'
+                    WHEN cp.flow < 50 THEN 'Very High'
                     ELSE 'Extremely High'
                 END AS flow_level,
                 -- Add water level classification (customize thresholds as needed)
                 CASE
-                    WHEN pf.water_level IS NULL THEN 'No Data'
-                    WHEN pf.water_level < 0.5 THEN 'Low'
-                    WHEN pf.water_level < 1.0 THEN 'Normal'
-                    WHEN pf.water_level < 1.5 THEN 'High'
+                    WHEN cp.water_level IS NULL THEN 'No Data'
+                    WHEN cp.water_level < 0.5 THEN 'Low'
+                    WHEN cp.water_level < 1.0 THEN 'Normal'
+                    WHEN cp.water_level < 1.5 THEN 'High'
                     ELSE 'Very High'
                 END AS water_level_class
-            FROM public.dgre_poi_flow pf
-            INNER JOIN public.dgre_poi_station s ON pf.station_name = s.station_name
+            FROM public.dgre_critical_point cp
+            INNER JOIN public.dgre_poi_station s ON cp.station_name = s.station_name
             CROSS JOIN bounds
-            WHERE pf.measurement_date = latest_measurement
-                AND pf.forecast_date = f_date
+            WHERE cp.measurement_date = latest_measurement
+                AND cp.forecast_date = f_date
                 AND ST_Intersects(s.geom, ST_Transform(bounds.geom, 4326))
         )
     -- Generate MVT encoding of final input record
@@ -103,11 +103,11 @@ BEGIN
 END;
 $BODY$;
 
-COMMENT ON FUNCTION public.dgre_poi_flow(integer, integer, integer, timestamp without time zone)
-IS 'Generate Mapbox Vector Tile for POI flow data at a given zoom, x, y tile coordinates and forecast date. Returns flow and water level data for the latest measurement date.';
+COMMENT ON FUNCTION public.dgre_critical_point(integer, integer, integer, timestamp without time zone)
+IS 'Generate Mapbox Vector Tile for critical point data at a given zoom, x, y tile coordinates and forecast date. Returns flow and water level data for the latest measurement date.';
 
--- Function to get POI flow data as GeoJSON (without tiling)
-CREATE OR REPLACE FUNCTION public.dgre_poi_flow_geojson(
+-- Function to get critical point data as GeoJSON (without tiling)
+CREATE OR REPLACE FUNCTION public.dgre_critical_point_geojson(
     forecast_date timestamp without time zone)
     RETURNS json
     LANGUAGE 'plpgsql'
@@ -121,7 +121,7 @@ DECLARE
 BEGIN
     -- Get the latest measurement date
     SELECT MAX(measurement_date) INTO latest_measurement
-    FROM public.dgre_poi_flow;
+    FROM public.dgre_critical_point;
 
     WITH features AS (
         SELECT
@@ -130,32 +130,32 @@ BEGIN
             json_build_object(
                 'station_name', s.station_name,
                 'name_fr', s.name_fr,
-                'flow', pf.flow,
-                'water_level', pf.water_level,
-                'measurement_date', pf.measurement_date,
-                'forecast_date', pf.forecast_date,
-                'is_realtime', (pf.measurement_date = pf.forecast_date),
-                'forecast_horizon_hours', EXTRACT(EPOCH FROM (pf.forecast_date - pf.measurement_date)) / 3600,
+                'flow', cp.flow,
+                'water_level', cp.water_level,
+                'measurement_date', cp.measurement_date,
+                'forecast_date', cp.forecast_date,
+                'is_realtime', (cp.measurement_date = cp.forecast_date),
+                'forecast_horizon_hours', EXTRACT(EPOCH FROM (cp.forecast_date - cp.measurement_date)) / 3600,
                 'flow_level', CASE
-                    WHEN pf.flow IS NULL THEN 'No Data'
-                    WHEN pf.flow < 5 THEN 'Low'
-                    WHEN pf.flow < 15 THEN 'Normal'
-                    WHEN pf.flow < 30 THEN 'High'
-                    WHEN pf.flow < 50 THEN 'Very High'
+                    WHEN cp.flow IS NULL THEN 'No Data'
+                    WHEN cp.flow < 5 THEN 'Low'
+                    WHEN cp.flow < 15 THEN 'Normal'
+                    WHEN cp.flow < 30 THEN 'High'
+                    WHEN cp.flow < 50 THEN 'Very High'
                     ELSE 'Extremely High'
                 END,
                 'water_level_class', CASE
-                    WHEN pf.water_level IS NULL THEN 'No Data'
-                    WHEN pf.water_level < 0.5 THEN 'Low'
-                    WHEN pf.water_level < 1.0 THEN 'Normal'
-                    WHEN pf.water_level < 1.5 THEN 'High'
+                    WHEN cp.water_level IS NULL THEN 'No Data'
+                    WHEN cp.water_level < 0.5 THEN 'Low'
+                    WHEN cp.water_level < 1.0 THEN 'Normal'
+                    WHEN cp.water_level < 1.5 THEN 'High'
                     ELSE 'Very High'
                 END
             ) AS properties
-        FROM public.dgre_poi_flow pf
-        INNER JOIN public.dgre_poi_station s ON pf.station_name = s.station_name
-        WHERE pf.measurement_date = latest_measurement
-            AND pf.forecast_date = f_date
+        FROM public.dgre_critical_point cp
+        INNER JOIN public.dgre_poi_station s ON cp.station_name = s.station_name
+        WHERE cp.measurement_date = latest_measurement
+            AND cp.forecast_date = f_date
     )
     SELECT json_build_object(
         'type', 'FeatureCollection',
@@ -168,5 +168,5 @@ BEGIN
 END;
 $BODY$;
 
-COMMENT ON FUNCTION public.dgre_poi_flow_geojson(timestamp without time zone)
-IS 'Generate GeoJSON FeatureCollection for POI flow data at a given forecast date. Returns all stations with their flow and water level data for the latest measurement date.';
+COMMENT ON FUNCTION public.dgre_critical_point_geojson(timestamp without time zone)
+IS 'Generate GeoJSON FeatureCollection for critical point data at a given forecast date. Returns all stations with their flow and water level data for the latest measurement date.';

@@ -27,9 +27,6 @@ services:
       - WAIT_TIMEOUT=60
       - SQLALCHEMY_DATABASE_URI=postgresql://${DB_USER}:${DB_PASSWORD}@dgre-db:5432/${DB_NAME}
       - FLASK_APP=dgrehydro/__init__.py
-    volumes:
-      - ${DATA_RIVERINE_SOURCE_DIR}:${DATA_RIVERINE_SOURCE_DIR}
-      - ${DATA_FLASHFLOOD_SOURCE_DIR}:${DATA_FLASHFLOOD_SOURCE_DIR}
     depends_on:
       dgre-db:
         condition: service_healthy

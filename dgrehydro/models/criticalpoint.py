@@ -1,10 +1,10 @@
 from dgrehydro import db
 
 
-class PoiFlow(db.Model):
-    __tablename__ = "dgre_poi_flow"
+class CriticalPoint(db.Model):
+    __tablename__ = "dgre_critical_point"
     __table_args__ = (
-        db.UniqueConstraint("station_name", "measurement_date", "forecast_date", name='unique_poi_flow_measurement'),
+        db.UniqueConstraint("station_name", "measurement_date", "forecast_date", name='unique_critical_point_measurement'),
     )
 
     id = db.Column(db.Integer, primary_key=True)
@@ -22,7 +22,7 @@ class PoiFlow(db.Model):
         self.water_level = water_level
 
     def __repr__(self):
-        return f'<PoiFlow {self.station_name} - {self.forecast_date}>'
+        return f'<CriticalPoint {self.station_name} - {self.forecast_date}>'
 
     @property
     def is_realtime(self):
@@ -43,7 +43,7 @@ class PoiFlow(db.Model):
         return self.forecast_horizon_hours / 24 if self.forecast_horizon_hours else 0
 
     def serialize(self):
-        poi_flow = {
+        critical_point = {
             "id": self.id,
             "station_name": self.station_name,
             "measurement_date": self.measurement_date.isoformat() if self.measurement_date else None,
@@ -54,4 +54,4 @@ class PoiFlow(db.Model):
             "forecast_horizon_hours": self.forecast_horizon_hours,
             "forecast_horizon_days": round(self.forecast_horizon_days, 2)
         }
-        return poi_flow
+        return critical_point

@@ -8,7 +8,6 @@ from sqlalchemy.sql import text
 from dgrehydro import db
 from dgrehydro.ingestors.burkina.geometries_loader import load_river_segments, load_municipalities, load_regions, \
     load_poi_stations
-from dgrehydro.ingestors.burkina.ingestor_poiflow import ingest_poi_flow_from_csv
 from dgrehydro.ingestors.critical_points.critpoint_service import ingest_critpoint_data
 from dgrehydro.ingestors.flashflood.flash_service import ingest_flashfloods
 from dgrehydro.ingestors.hype.hype_service import ingest_hype_data

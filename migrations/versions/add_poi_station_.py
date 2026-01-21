@@ -1,7 +1,7 @@
 """Add POI station geometry table
 
 Revision ID: add_poi_station
-Revises: add_poi_flow
+Revises: add_critical_point
 Create Date: 2025-12-12 11:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from geoalchemy2 import Geometry
 
 # revision identifiers, used by Alembic.
 revision = 'add_poi_station'
-down_revision = 'add_poi_flow'
+down_revision = 'add_critical_point'
 branch_labels = None
 depends_on = None
 

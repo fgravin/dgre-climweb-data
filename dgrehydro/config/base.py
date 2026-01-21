@@ -39,8 +39,6 @@ SETTINGS = {
     },
     'STATIC_DATA_DIR': './dgrehydro/_static_data/',
     'SQLALCHEMY_DATABASE_URI': os.getenv('SQLALCHEMY_DATABASE_URI'),
-    'DATA_RIVERINE_SOURCE_DIR': os.getenv('DATA_RIVERINE_SOURCE_DIR'),
-    'DATA_FLASHFLOOD_SOURCE_DIR': os.getenv('DATA_FLASHFLOOD_SOURCE_DIR'),
-    'DATA_POI_FLOW_SOURCE_DIR': os.getenv('DATA_POI_FLOW_SOURCE_DIR', './data/vigilance/'),
+    'DATA_CRITICAL_POINT_SOURCE_DIR': os.getenv('DATA_CRITICAL_POINT_SOURCE_DIR', './data/critpoint/'),
     'DATA_DIR': os.getenv('DATA_DIR'),
 }

@@ -46,7 +46,7 @@ health.add_check(db_available)
 import dgrehydro.routes.routes_flashflood
 import dgrehydro.routes.routes_riverineflood
 import dgrehydro.routes.routes_dustwarning
-import dgrehydro.routes.routes_poiflow
+import dgrehydro.routes.routes_criticalpoint
 
 app.register_blueprint(endpoints, url_prefix='/api/v1')
 
