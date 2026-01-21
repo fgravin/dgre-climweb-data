@@ -66,13 +66,13 @@ def compute_water_level_alert(station_name: str, water_level: float) -> int:
     station_thresholds = thresholds[station_name]
 
     if water_level <= station_thresholds['green_yellow']:
-        return 1  # Green
+        return 0  # Green
     elif water_level <= station_thresholds['yellow_orange']:
-        return 2  # Yellow
+        return 1  # Yellow
     elif water_level <= station_thresholds['orange_red']:
-        return 3  # Orange
+        return 2  # Orange
     else:
-        return 4  # Red
+        return 3  # Red
 
 
 def extract_db_critical_points_from_csv(csv_path: str) -> list[CriticalPoint]:
