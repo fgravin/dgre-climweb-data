@@ -98,6 +98,12 @@ def extract_db_critical_points_from_csv(csv_path: str) -> list[CriticalPoint]:
     # Clean column names (remove BOM and extra spaces)
     df.columns = df.columns.str.strip().str.replace('\ufeff', '')
 
+    # Parse Date column and filter to only keep the most recent date
+    df['_parsed_date'] = pd.to_datetime(df['Date'], format='%d/%m/%Y %H:%M:%S')
+    max_date = df['_parsed_date'].max()
+    df = df[df['_parsed_date'] == max_date]
+    logging.info("[CRITPOINT][INGEST]: Filtered to most recent date: %s (%d rows)", max_date, len(df))
+
     critical_points = []
 
     # Parse station columns (every pair of columns after Date and Offset)
@@ -107,8 +113,8 @@ def extract_db_critical_points_from_csv(csv_path: str) -> list[CriticalPoint]:
 
     for _, row in df.iterrows():
         try:
-            # Parse measurement date
-            measurement_date = pd.to_datetime(row['Date'], format='%d/%m/%Y %H:%M:%S')
+            # Use already parsed date
+            measurement_date = row['_parsed_date']
             offset = int(row['Offset'])
 
             # Calculate forecast date
