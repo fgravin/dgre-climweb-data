@@ -38,6 +38,7 @@ SETTINGS = {
       }
     },
     'STATIC_DATA_DIR': './dgrehydro/_static_data/',
+    'CRITICAL_POINT_THRESHOLDS_FILE': './dgrehydro/_static_data/critical_point/water_level_thresholds.csv',
     'SQLALCHEMY_DATABASE_URI': os.getenv('SQLALCHEMY_DATABASE_URI'),
     'DATA_CRITICAL_POINT_SOURCE_DIR': os.getenv('DATA_CRITICAL_POINT_SOURCE_DIR', './data/critpoint/'),
     'DATA_DIR': os.getenv('DATA_DIR'),

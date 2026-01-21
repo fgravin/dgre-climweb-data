@@ -13,13 +13,15 @@ class CriticalPoint(db.Model):
     forecast_date = db.Column(db.DateTime, nullable=False)
     flow = db.Column(db.Float, nullable=True)
     water_level = db.Column(db.Float, nullable=True)
+    water_level_alert = db.Column(db.Integer, nullable=True)
 
-    def __init__(self, station_name, measurement_date, forecast_date, flow, water_level):
+    def __init__(self, station_name, measurement_date, forecast_date, flow, water_level, water_level_alert=None):
         self.station_name = station_name
         self.measurement_date = measurement_date
         self.forecast_date = forecast_date
         self.flow = flow
         self.water_level = water_level
+        self.water_level_alert = water_level_alert
 
     def __repr__(self):
         return f'<CriticalPoint {self.station_name} - {self.forecast_date}>'
@@ -50,6 +52,7 @@ class CriticalPoint(db.Model):
             "forecast_date": self.forecast_date.isoformat() if self.forecast_date else None,
             "flow": self.flow,
             "water_level": self.water_level,
+            "water_level_alert": self.water_level_alert,
             "is_realtime": self.is_realtime,
             "forecast_horizon_hours": self.forecast_horizon_hours,
             "forecast_horizon_days": round(self.forecast_horizon_days, 2)
