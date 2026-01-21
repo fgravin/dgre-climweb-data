@@ -9,6 +9,7 @@ from dgrehydro import db
 from dgrehydro.ingestors.burkina.geometries_loader import load_river_segments, load_municipalities, load_regions, \
     load_poi_stations
 from dgrehydro.ingestors.burkina.ingestor_poiflow import ingest_poi_flow_from_csv
+from dgrehydro.ingestors.critical_points.critpoint_service import ingest_critpoint_data
 from dgrehydro.ingestors.flashflood.flash_service import ingest_flashfloods
 from dgrehydro.ingestors.hype.hype_service import ingest_hype_data
 from dgrehydro.models.riverineflood import RiverineFlood
@@ -74,11 +75,11 @@ def ingest_riverine(date: str, since: str):
 def ingest_flashflood(date: str, since:str ):
     ingest_flashfloods(date, since)
 
-@click.command(name="ingest_poiflow")
-def ingest_poiflow():
-    logging.info("[INGESTION][POI_FLOW]: Start")
-    ingest_poi_flow_from_csv()
-    logging.info("[INGESTION][POI_FLOW]: Done")
+@click.command(name="ingest_critpoint")
+@click.argument("date", required=False)
+@click.argument("since", required=False)
+def ingest_critpoint(date: str, since: str):
+    ingest_critpoint_data(date, since)
 
 ########################
 # UPDATE COMMANDS

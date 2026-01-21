@@ -29,6 +29,12 @@ SETTINGS = {
         "user": config['fanfar_ftp']['user'],
         "password": config['fanfar_ftp']['password'],
         "path": config['fanfar_ftp']['path']
+      },
+      'anam_ftp' : {
+        "url": config['anam_ftp']['url'],
+        "user": config['anam_ftp']['user'],
+        "password": config['anam_ftp']['password'],
+        "path": config['anam_ftp']['path']
       }
     },
     'STATIC_DATA_DIR': './dgrehydro/_static_data/',

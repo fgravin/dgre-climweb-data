@@ -24,6 +24,7 @@ def upgrade():
         sa.Column('forecast_date', sa.DateTime(), nullable=False),
         sa.Column('flow', sa.Float(), nullable=True),
         sa.Column('water_level', sa.Float(), nullable=True),
+        sa.Column('water_level_alert', sa.Integer(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('station_name', 'measurement_date', 'forecast_date', name='unique_poi_flow_measurement')
     )
