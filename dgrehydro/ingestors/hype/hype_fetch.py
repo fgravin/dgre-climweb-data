@@ -41,7 +41,10 @@ def fetch_daily_hype_data(utc_time: datetime = datetime.utcnow()):
 
     forecast_issue_date = utc_time.strftime("%Y%m%d")
     logging.info("[HYPE][FETCH]: Start for date %s", forecast_issue_date)
-    root_dest_folder = os.path.abspath(os.path.join(SETTINGS.get('DATA_DIR'), HYPE_FOLDER))
+    root_dest_folder = os.path.join(SETTINGS.get('DATA_DIR'), HYPE_FOLDER)
+
+    # Save the original working directory to restore it later
+    original_cwd = os.getcwd()
 
     for model in HYPE_MODELS:
         model_name = model["name"]
@@ -51,11 +54,11 @@ def fetch_daily_hype_data(utc_time: datetime = datetime.utcnow()):
         dest_folder = os.path.join(model_folder, forecast_issue_date)
 
         try:
-            os.makedirs(dest_folder)
+            os.makedirs(dest_folder, exist_ok=True)
             os.chdir(dest_folder)
             logging.info("[HYPE][FETCH]: Changed directory to %s", dest_folder)
         except Exception as e:
-            logging.error("[HYPE][FETCH]: Failed to change directory to %s: %s", dest_folder, str(e))
+            logging.error("[HYPE][FETCH]: Failed to create/change directory to %s: %s", dest_folder, str(e))
             continue
 
         ftp_source_path = fanfar_ftp["path"] + model_path + '/' + forecast_issue_date
@@ -82,5 +85,9 @@ def fetch_daily_hype_data(utc_time: datetime = datetime.utcnow()):
 
         except Exception as e:
             logging.error("[HYPE][FETCH]: Error processing model %s: %s", model_name, str(e))
+
+    # Restore the original working directory
+    os.chdir(original_cwd)
+    logging.info("[HYPE][FETCH]: Restored original working directory: %s", original_cwd)
 
     return True

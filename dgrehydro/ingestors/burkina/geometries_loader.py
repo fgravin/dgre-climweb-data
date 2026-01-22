@@ -13,7 +13,6 @@ from dgrehydro.models._geo_riversegment import RiverSegment
 from dgrehydro.models._geo_poistation import PoiStation
 
 GEOMETRIES_DATA_DIR = './dgrehydro/_static_data/geo'
-STATIC_DATA_DIR = './dgrehydro/_static_data'
 RIVER_SEGMENTS_GEOJSON_FILE = 'bfa12_river_segments.geojson'
 MUNICIPALITIES_GEOJSON_FILE = 'bfa_adm3.geojson'
 REGIONS_GEOJSON_FILE = 'bfa_regions.geojson'

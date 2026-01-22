@@ -9,8 +9,6 @@ from dgrehydro import SETTINGS, db
 from dgrehydro.models.flashflood import FlashFlood
 from dgrehydro.utils import get_dates_from_dataframe
 
-STATIC_DATA_DIR='./dgrehydro/_static_data/'
-
 def assign_vigilance(value):
     if value == 0:
         return 0
